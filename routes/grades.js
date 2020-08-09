@@ -120,6 +120,35 @@ router.get('/:student/:subject', async (req, res, next) => {
   }
 });
 
+router.get('/:subject/:type', async (req, res, next) => {
+  try {
+    const bodyParams = req.query;
+    const data = JSON.parse(await readFile(global.fileName));
+    let totalRegistered = 0;
+    let avarageValue = 0;
+
+    const userGrade = data.grades.filter((grade) => {
+      grade.subject.replace(/ /g, '') == bodyParams.subject &&
+        grade.type.replace(/ /g, '-') == bodyParams.type;
+    });
+
+    userGrade.forEach((sumValues) => {
+      type = sumValues.type;
+      subject = sumValues.subject;
+      totalRegistered++;
+      totValues += sumValues.value;
+    });
+
+    res.send(
+      ` Média das notas da matéria ${subject} atividade ${type} é ${
+        totValues / totalRegistered
+      }`
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.use((err, req, res, next) => {
   global.logger.error(`${req.method} ${req.baseUrl} - ${err.message}`);
   res.status(400).send({ error: err.message });
