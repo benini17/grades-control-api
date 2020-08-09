@@ -99,6 +99,27 @@ router.put('/', async (req, res, next) => {
   }
 });
 
+//FIXME: userGrade keeps resulting undefined
+router.get('/:student/:subject', async (req, res, next) => {
+  try {
+    const data = JSON.parse(await readFile(global.fileName));
+    const paramBody = req.params;
+
+    let userGrade = data.grades.filter((grade) => {
+      grade.student.replace(/ /g, '-') === paramBody.student &&
+        grade.subject === paramBody.subject;
+    });
+
+    let total = userGrade.reduce((acc, crr) => {
+      acc + crr.value;
+    }, 0);
+
+    res.send(`${userGrade.student} ${userGrade.subject} ${total}`);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.use((err, req, res, next) => {
   global.logger.error(`${req.method} ${req.baseUrl} - ${err.message}`);
   res.status(400).send({ error: err.message });
