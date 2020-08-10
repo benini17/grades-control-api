@@ -5,7 +5,7 @@ const { readFile, writeFile } = fs;
 
 const router = express.Router();
 
-router.post('/', async (req, res, next) => {
+router.post('/include', async (req, res, next) => {
   try {
     let grades = req.body;
     const data = JSON.parse(await readFile(global.fileName));
@@ -28,7 +28,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/search', async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     delete data.nextId;
@@ -39,7 +39,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/search/:id', async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     const userGrade = data.grades.find(
@@ -51,7 +51,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/delete/:id', async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     let information = data.grades.find(
@@ -75,7 +75,7 @@ router.delete('/:id', async (req, res, next) => {
   }
 });
 
-router.put('/', async (req, res, next) => {
+router.put('/edit', async (req, res, next) => {
   try {
     const userGrade = req.body;
 
@@ -120,17 +120,22 @@ router.get('/:student/:subject', async (req, res, next) => {
   }
 });
 
-router.get('/:subject/:type', async (req, res, next) => {
+router.get('/subjectTypeAverage', async (req, res, next) => {
   try {
-    const bodyParams = req.query;
+    const bodyParams = req.body;
     const data = JSON.parse(await readFile(global.fileName));
     let totalRegistered = 0;
-    let avarageValue = 0;
+    let type;
+    let subject;
+    let totValues = 0;
+    let averageValue = 0;
 
     const userGrade = data.grades.filter((grade) => {
-      grade.subject.replace(/ /g, '') == bodyParams.subject &&
-        grade.type.replace(/ /g, '-') == bodyParams.type;
+      return (
+        grade.subject === bodyParams.subject && grade.type === bodyParams.type
+      );
     });
+    console.log('userGrade', userGrade);
 
     userGrade.forEach((sumValues) => {
       type = sumValues.type;
@@ -139,11 +144,13 @@ router.get('/:subject/:type', async (req, res, next) => {
       totValues += sumValues.value;
     });
 
+    averageValue = totValues / totalRegistered;
     res.send(
-      ` Média das notas da matéria ${subject} atividade ${type} é ${
-        totValues / totalRegistered
-      }`
+      ` Média das notas da matéria ${subject} atividade ${type} é ${averageValue}`
     );
+
+    // grade.subject.replace(/ /g, '') === bodyParams.subject &&
+    // grade.type.replace(/ /g, '-') === bodyParams.type;
   } catch (err) {
     next(err);
   }
