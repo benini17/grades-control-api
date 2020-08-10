@@ -106,13 +106,18 @@ router.get('/:student/:subject', async (req, res, next) => {
     const paramBody = req.params;
 
     let userGrade = data.grades.filter((grade) => {
-      grade.student.replace(/ /g, '-') === paramBody.student &&
-        grade.subject === paramBody.subject;
+      return (
+        grade.student === paramBody.student &&
+        grade.subject === paramBody.subject
+      );
     });
+    console.log('userGrade', userGrade);
 
     let total = userGrade.reduce((acc, crr) => {
       acc + crr.value;
     }, 0);
+
+    console.log('total', total);
 
     res.send(`${userGrade.student} ${userGrade.subject} ${total}`);
   } catch (err) {
