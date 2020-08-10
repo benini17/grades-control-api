@@ -5,7 +5,7 @@ const { readFile, writeFile } = fs;
 
 const router = express.Router();
 
-router.post('/include', async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     let grades = req.body;
     const data = JSON.parse(await readFile(global.fileName));
@@ -28,7 +28,7 @@ router.post('/include', async (req, res, next) => {
   }
 });
 
-router.get('/search', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     delete data.nextId;
@@ -39,7 +39,7 @@ router.get('/search', async (req, res, next) => {
   }
 });
 
-router.get('/search/:id', async (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     const userGrade = data.grades.find(
@@ -51,7 +51,7 @@ router.get('/search/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/delete/:id', async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     let information = data.grades.find(
@@ -75,7 +75,7 @@ router.delete('/delete/:id', async (req, res, next) => {
   }
 });
 
-router.put('/edit', async (req, res, next) => {
+router.put('/', async (req, res, next) => {
   try {
     const userGrade = req.body;
 
@@ -101,6 +101,7 @@ router.put('/edit', async (req, res, next) => {
 
 router.get('/:student/:subject', async (req, res, next) => {
   try {
+    console.log('entrou aqui student subject');
     const data = JSON.parse(await readFile(global.fileName));
     const paramBody = req.params;
 
@@ -124,9 +125,10 @@ router.get('/:student/:subject', async (req, res, next) => {
   }
 });
 
-router.get('/subjectTypeAverage', async (req, res, next) => {
+router.get('/average/:subject/:type', async (req, res, next) => {
   try {
-    const bodyParams = req.body;
+    console.log('entrou aqui subject type');
+    const bodyParams = req.params;
     const data = JSON.parse(await readFile(global.fileName));
     let totalRegistered = 0;
     let type;
@@ -135,11 +137,17 @@ router.get('/subjectTypeAverage', async (req, res, next) => {
     let averageValue = 0;
 
     const userGrade = data.grades.filter((grade) => {
+      console.log('bodyParams.subject', bodyParams.subject);
+      console.log(
+        "grade.subject.replace(/ /g, '')",
+        grade.subject.replace(/ /g, '')
+      );
       return (
-        grade.subject === bodyParams.subject && grade.type === bodyParams.type
+        grade.subject.replace(/ /g, '') === bodyParams.subject &&
+        grade.type.replace(/ /g, '-') === bodyParams.type
       );
     });
-    console.log('userGrade', userGrade);
+    console.log('userGrade filter', userGrade);
 
     userGrade.forEach((sumValues) => {
       type = sumValues.type;
@@ -147,14 +155,13 @@ router.get('/subjectTypeAverage', async (req, res, next) => {
       totalRegistered++;
       totValues += sumValues.value;
     });
+    console.log('userGrade foreach', userGrade);
 
     averageValue = totValues / totalRegistered;
+    console.log('averageValue', averageValue);
     res.send(
       ` Média das notas da matéria ${subject} atividade ${type} é ${averageValue}`
     );
-
-    // grade.subject.replace(/ /g, '') === bodyParams.subject &&
-    // grade.type.replace(/ /g, '-') === bodyParams.type;
   } catch (err) {
     next(err);
   }
