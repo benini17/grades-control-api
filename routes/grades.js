@@ -16,10 +16,6 @@ router.post('/', async (req, res, next) => {
 
     await writeFile(global.fileName, JSON.stringify(data, null, 2));
 
-    //TODO: data.grades.find() to select the one who's been registered
-    /* data.grades.find(
-      (grade) => grade.id === parseInt(req.params.id)
-    ); */
     res.send(grades);
 
     global.logger.info(`POST /account - ${JSON.stringify(data)}`);
@@ -162,6 +158,35 @@ router.get('/average/:subject/:type', async (req, res, next) => {
     res.send(
       ` Média das notas da matéria ${subject} atividade ${type} é ${averageValue}`
     );
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/top3/:subject/:type', async (req, res, next) => {
+  try {
+    console.log('entrou aqui top 3 student subject');
+    const data = JSON.parse(await readFile(global.fileName));
+    const paramBody = req.params;
+
+    let userGrade = data.grades.filter((grade) => {
+      return (
+        grade.subject.replace(/ /g, '') === paramBody.subject &&
+        grade.type.replace(/ /g, '-') === paramBody.type
+      );
+    });
+
+    userGrade
+      .sort(function (a, b) {
+        return a - b;
+      })
+      .slice(0, 2);
+
+    console.log('userGrade', userGrade);
+
+    res.send(`${userGrade[0].student}  ${userGrade[0].subject}  ${userGrade[0].value} <br>
+    ${userGrade[1].student}  ${userGrade[1].subject}  ${userGrade[1].value} <br>
+    ${userGrade[2].student}  ${userGrade[2].subject}  ${userGrade[2].value}`);
   } catch (err) {
     next(err);
   }
